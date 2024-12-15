@@ -9,7 +9,7 @@ import { UsersModule } from 'src/modules/users/users.module';
   imports:[
     JwtModule.register({
       secret: "MI_CODIGO_SECRETO",
-      signOptions:{expiresIn:'60S'}
+      signOptions:{expiresIn:'3600S'}
     }),
     forwardRef(() => UsersModule),
   ],
