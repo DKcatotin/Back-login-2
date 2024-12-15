@@ -3,7 +3,7 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,9 +25,10 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() changePasswordDto: ChangePasswordDto, @Query('token') token: string) {
-    // Verificar el token y obtener el userId
-    const userId = await this.authService.verifyResetToken(token);
-    return this.authService.changePassword(changePasswordDto, userId);
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
+  
+
+  
 }

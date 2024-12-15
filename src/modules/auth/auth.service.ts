@@ -6,13 +6,15 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private mailerService: MailerService
   ) {}
 
   // Método para registrar un nuevo usuario
@@ -84,22 +86,43 @@ export class AuthService {
     // Aquí deberías enviar el token al correo electrónico del usuario.
     // Por simplicidad, retornaremos el token en la respuesta.
     // En producción, usa un servicio de correo electrónico para enviar el token.
+    // Construir la URL de restablecimiento (debería apuntar a tu front-end)
+     const resetUrl = `http://localhost:4200/auth/reset-password?token=${resetToken}`;
+
+    // Enviar correo electrónico 
+    await this.mailerService.sendMail({
+       to: user.mail,
+        subject: 'Recuperación de contraseña',
+         template: 'forgot-password', // Ruta a tu plantilla de correo 
+         context: {
+           name: user.name, 
+           url: resetUrl,
+           },
+           });
 
     return { message: 'Se ha enviado un enlace de restablecimiento de contraseña a su correo electrónico', resetToken };
   }
 
   // Método para cambiar la contraseña
-  async changePassword(changePasswordDto: ChangePasswordDto, userId: number) {
-    const { newPassword } = changePasswordDto;
-
-    // Encriptar la nueva contraseña
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Actualizar la contraseña del usuario
-    await this.usersService.updatePassword(userId, hashedPassword);
-
-    return { message: 'Contraseña actualizada correctamente' };
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { newPassword, token } = resetPasswordDto;
+  
+    try {
+      const payload = this.jwtService.verify(token);
+      const userId = payload.sub;
+  
+      // Encriptar la nueva contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Actualizar la contraseña del usuario
+      await this.usersService.updatePassword(userId, hashedPassword);
+  
+      return { message: 'Contraseña actualizada correctamente' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
   }
+  
 
   // Método para validar el token de restablecimiento
   async verifyResetToken(token: string): Promise<number> {
