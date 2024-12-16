@@ -67,7 +67,7 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
   
     return { token };
-  }
+  } 
 
    // Método para solicitar restablecimiento de contraseña
    async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {

@@ -33,14 +33,16 @@ import { join } from 'path';
       defaults: {
         from: '"No Reply" <noreply@tudominio.com>', // Remitente predeterminado
       },
-      template:{
-        dir: join(__dirname, '..', 'templates'), // Ruta relativa a `src/templates`
+      template: {
+        // Detecta si la aplicación está en desarrollo o producción
+        dir: process.env.NODE_ENV === 'production'
+          ? join(__dirname, '..', 'templates') // Ruta en producción (dist/templates)
+          : join(__dirname, '..', '..', 'src', 'templates'), // Ruta en desarrollo (src/templates)
         adapter: new HandlebarsAdapter(),
-        options:{
-          strict:true,
-        }
-
-      }
+        options: {
+          strict: true,
+        },
+      },
     })
   ],
   controllers: [AppController, AuthController],
